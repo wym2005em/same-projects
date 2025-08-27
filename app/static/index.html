@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Operations Platform</title>
+    <!-- 外部依赖 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <style>
+        /* 基础样式（保持原有样式不变） */
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f9fafb;
+            padding-bottom: 3rem;
+        }
+        .header {
+            background-color: #fff;
+            padding: 12px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        .header h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .search-input-group {
+            position: relative;
+            z-index: 10;
+        }
+        .search-input {
+            width: 100%;
+            padding: 8px 12px 8px 36px;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            pointer-events: auto !important;
+            z-index: 11;
+            position: relative;
+        }
+        .search-input:focus {
+            outline: none;
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            z-index: 2;
+        }
+        .filter-container {
+            background-color: #fff;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .filter-group {
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        .filter-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+            color: #64748b;
+            font-weight: 500;
+        }
+        .category-tags-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .category-tag-btn {
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            background-color: white;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+        .category-tag-btn:hover {
+            border-color: #93c5fd;
+            color: #2563eb;
+        }
+        .category-tag-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .category-tag-btn:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+        .project-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .project-card {
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.12);
+        }
+        .project-image-container {
+            position: relative;
+            height: 180px;
+            overflow: hidden;
+        }
+        .project-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        .project-card:hover .project-image {
+            transform: scale(1.03);
+        }
+        .score-badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            z-index: 10;
+        }
+        .card-content {
+            padding: 1rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .project-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0.5rem 0;
+            color: #1e293b;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .project-summary {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin: 0.5rem 0;
+            flex-grow: 1;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .project-meta {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            margin: 0.5rem 0;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .category-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-bottom: 1rem;
+        }
+        .category-tag {
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background-color: #eff6ff;
+            color: #2563eb;
+        }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: auto;
+        }
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            border-radius: 4px;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin: 2rem 0;
+        }
+        .pagination {
+            margin: 0;
+        }
+        .page-link {
+            color: #2563eb;
+            border-color: #dbeafe;
+        }
+        .page-item.active .page-link {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        .page-item.disabled .page-link {
+            color: #94a3b8;
+            background-color: #f1f5f9;
+            border-color: #e2e8f0;
+        }
+        .status-container {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #64748b;
+        }
+        .status-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: #94a3b8;
+        }
+        .error-message {
+            color: #dc2626;
+            background-color: #fee2e2;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .modal-content {
+            border-radius: 8px;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        #resetFilter {
+            font-size: 0.85rem;
+            padding: 6px 12px;
+        }
+        .input-group .btn {
+            font-size: 0.9rem;
+            padding: 8px 12px;
+        }
+        @media (max-width: 768px) {
+            .project-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* 登录模态框样式 */
+        #loginModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            opacity: 1;
+            transition: opacity 0.3s ease;
+        }
+        #loginModal.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .login-modal-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        .login-form-group {
+            margin-bottom: 1rem;
+        }
+        .login-form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        .login-form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .login-btn:hover {
+            background-color: #2563eb;
+        }
+        .login-error {
+            color: #dc2626;
+            text-align: center;
+            margin-bottom: 1rem;
+            min-height: 20px;
+        }
+        .login-info {
+            text-align: center;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+        .logout-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 1rem;
+        }
+        #logoutBtn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        #logoutBtn:hover {
+            background-color: #dc2626;
+        }
+    </style>
+</head>
+<body>
+    <!-- 登录模态框 -->
+    <div id="loginModal">
+        <div class="login-modal-content">
+            <h2 style="text-align: center; margin-bottom: 1.5rem;">please login</h2>
+            <div class="login-error" id="loginError"></div>
+            <form id="loginForm">
+                <div class="login-form-group">
+                    <label for="username">user</label>
+                    <input type="text" id="username" class="login-form-control" required>
+                </div>
+                <div class="login-form-group">
+                    <label for="password">key</label>
+                    <input type="password" id="password" class="login-form-control" required>
+                </div>
+                <button type="submit" class="login-btn">login</button>
+            </form>
+            <div class="login-info">
+                <p>user: xxx</p>
+                <p>key: if you want login,please call ming/jonney/nisarg</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页头 -->
+    <header class="header">
+        <div class="container">
+            <div class="row align-items-center justify-content-between">
+                <div class="col">
+                    <h1 class="mb-0">
+                        <i class="fas fa-database me-2 text-primary"></i>Project Operations Platform
+                    </h1>
+                </div>
+                <div class="col-auto">
+                    <button id="logoutBtn">Log out</button>
+                    <select id="itemsPerPage" class="form-select">
+                        <option value="8" selected>8 per page</option>
+                        <option value="1">1 per page</option>
+                        <option value="10">10 per page</option>
+                        <option value="20">20 per page</option>
+                        <option value="50">50 per page</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 核心修复：Tab导航和内容统一放入 .container -->
+    <div class="container">
+        <!-- Tab导航 -->
+        <ul class="nav nav-tabs" id="projectTabs" role="tablist" class="mb-3">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="search-tab" data-bs-toggle="tab" data-bs-target="#search" type="button" role="tab" aria-controls="search" aria-selected="true">Project Search</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="analysis-tab" data-bs-toggle="tab" data-bs-target="#analysis" type="button" role="tab" aria-controls="analysis" aria-selected="false">Project Analysis</button>
+            </li>
+        </ul>
+
+        <!-- Tab内容容器 -->
+        <div class="tab-content" id="projectTabsContent">
+            <!-- Project Search 页面 -->
+            <div class="tab-pane fade show active" id="search" role="tabpanel" aria-labelledby="search-tab">
+                <!-- 错误提示区域 -->
+                <div id="errorContainer" class="error-message d-none"></div>
+                <!-- 分类过滤控件（标签式） -->
+                <div class="filter-container">
+                    <!-- 搜索框 -->
+                    <div class="filter-group">
+                        <label class="filter-label">Search</label>
+                        <div class="input-group search-input-group">
+                            <span class="search-icon"><i class="fas fa-search"></i></span>
+                            <input type="text" id="searchInput" class="form-control search-input" 
+                                placeholder="Search by description or summary..."
+                                autocomplete="off" spellcheck="false">
+                            <button class="btn btn-primary" id="searchBtn">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <button class="btn btn-outline-secondary" id="clearSearchBtn" style="display: none;">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- 可见性筛选 -->
+                    <div class="filter-group">
+                        <label class="filter-label">Visibility</label>
+                        <div id="visibilityTags" class="category-tags-container">
+                            <button class="category-tag-btn active" data-value="">All</button>
+                            <button class="category-tag-btn" data-value="public">Public</button>
+                            <button class="category-tag-btn" data-value="private">Private</button>
+                        </div>
+                    </div>
+                    <!-- 一级分类 -->
+                    <div class="filter-group">
+                        <label class="filter-label">Primary Category</label>
+                        <div id="categoryL1Tags" class="category-tags-container">
+                            <button class="category-tag-btn active" data-value="">All</button>
+                            <!-- 动态加载一级分类标签 -->
+                        </div>
+                    </div>
+                    <!-- 二级分类（联动） -->
+                    <div class="filter-group">
+                        <label class="filter-label">Secondary Category</label>
+                        <div id="categoryL2Tags" class="category-tags-container">
+                            <button class="category-tag-btn active" data-value="">All</button>
+                            <!-- 动态加载二级分类标签 -->
+                        </div>
+                    </div>
+                    <!-- 重置按钮 -->
+                    <div class="filter-group" style="margin-bottom: 0;">
+                        <button id="resetFilter" class="btn btn-outline-secondary">
+                            <i class="fas fa-sync-alt me-1"></i>Reset Filters
+                        </button>
+                    </div>
+                </div>
+                <!-- 项目列表 -->
+                <div id="projectList" class="project-grid">
+                    <!-- 动态加载区域 -->
+                </div>
+                <!-- 加载状态 -->
+                <div id="loading" class="status-container">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p>Loading project data...</p>
+                </div>
+                <!-- 空状态 -->
+                <div id="noData" class="status-container d-none">
+                    <i class="fas fa-search status-icon"></i>
+                    <p>No matching projects found</p>
+                </div>
+                <!-- 分页 -->
+                <div class="pagination-container">
+                    <nav>
+                        <ul class="pagination" id="pagination">
+                            <!-- 动态生成 -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Project Analysis 页面 -->
+            <div class="tab-pane fade" id="analysis" role="tabpanel" aria-labelledby="analysis-tab">
+                <div class="filter-container">
+                    <h3>Project Category Analysis</h3>
+                    <div id="analysisLoading" class="status-container">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p>Loading analysis data...</p>
+                    </div>
+                    <div id="analysisBoard" class="d-none">
+                        <!-- 分析数据将在这里动态生成 -->
+                    </div>
+                    <div id="analysisError" class="error-message d-none"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 详情模态框 -->
+    <div class="modal fade" id="projectModal" tabindex="-1" aria-labelledby="projectModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="projectModalLabel">Project Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="projectModalBody">
+                    <!-- 动态加载 -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 登录相关功能
+        const loginModal = document.getElementById('loginModal');
+        const loginForm = document.getElementById('loginForm');
+        const loginError = document.getElementById('loginError');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        // Cookie操作
+        function setCookie(name, value, days) {
+            const date = new Date();
+            date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            document.cookie = name + "=" + value + ";" + expires + ";path=/";
+        }
+
+        function getCookie(name) {
+            const nameEQ = name + "=";
+            const ca = document.cookie.split(';');
+            for (let i = 0; i < ca.length; i++) {
+                let c = ca[i];
+                while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+            }
+            return null;
+        }
+
+        function deleteCookie(name) {
+            setCookie(name, "", -1);
+        }
+
+        // 检查登录状态
+        function checkLoginStatus() {
+            const isLoggedIn = getCookie('isLoggedIn') === 'true';
+            if (isLoggedIn) {
+                loginModal.classList.add('hidden');
+                logoutBtn.style.display = 'block';
+            } else {
+                loginModal.classList.remove('hidden');
+                logoutBtn.style.display = 'none';
+            }
+        }
+
+        // 登录处理
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (username === 'sameuser' && password === 'sameuser123') {
+                setCookie('isLoggedIn', 'true', 1); // 保存1天
+                loginError.textContent = '';
+                checkLoginStatus();
+                loginForm.reset();
+            } else {
+                loginError.textContent = 'The username or password is incorrect. Please try again.';
+            }
+        });
+
+        // 登出处理
+        logoutBtn.addEventListener('click', function() {
+            deleteCookie('isLoggedIn');
+            checkLoginStatus();
+        });
+
+        // 阻止模态框关闭
+        loginModal.addEventListener('click', function(e) {
+            if (e.target === loginModal) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+        });
+
+        // 阻止ESC键关闭模态框
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && !loginModal.classList.contains('hidden')) {
+                e.preventDefault();
+            }
+        });
+
+        // 核心配置与变量
+        let currentPage = 1;
+        let itemsPerPage = 8;
+        let currentCategoryL1 = '';
+        let currentCategoryL2 = '';
+        let currentVisibility = '';
+        let searchQuery = '';
+        const sortBy = 'manual_score_updated';
+        const sortOrder = 'desc';
+        const apiBaseUrl = '';
+        const projectsUrl = `${apiBaseUrl}/api/projects`;
+        const categoriesUrl = `${apiBaseUrl}/api/categories`;
+        const placeholderImage = 'https://via.placeholder.com/400x300?text=No+Image';
+        
+        // 分类数据存储
+        let allCategories = {
+            l1: [],         // 一级分类列表
+            l2Map: {}       // 二级分类映射：{ "一级分类": ["二级分类1", ...] }
+        };
+        // 页面加载完成后初始化
+        $(document).ready(function() {
+            // 先检查登录状态
+            checkLoginStatus();
+            
+            // 显示错误消息
+            function showError(message) {
+                const errorContainer = $('#errorContainer');
+                errorContainer.text(message).removeClass('d-none');
+                setTimeout(() => errorContainer.addClass('d-none'), 5000);
+            }
+            // 隐藏错误消息
+            function hideError() {
+                $('#errorContainer').addClass('d-none');
+            }
+            // 防XSS转义
+            function escapeHtml(unsafe) {
+                if (!unsafe) return '';
+                return unsafe
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;")
+                    .replace(/"/g, "&quot;")
+                    .replace(/'/g, "&#039;");
+            }
+            // 初始化搜索框
+            const searchInput = $('#searchInput');
+            
+            // 确保输入框状态正常
+            searchInput.prop('disabled', false);
+            searchInput.prop('readonly', false);
+            
+            // 主动触发输入框的焦点状态修复
+            searchInput.on('click', function() {
+                $(this).focus();
+            });
+            
+            // 处理键盘事件
+            searchInput.on('keydown', function(e) {
+                e.stopPropagation();
+            });
+            // 初始化流程：先加载分类，再加载项目
+            fetchCategories()
+                .then(() => loadProjects())
+                .catch(error => {
+                    showError(`初始化失败: ${error.message}`);
+                    $('#loading').addClass('d-none');
+                    $('#noData').removeClass('d-none');
+                });
+            
+            // 每页显示数量变化
+            $('#itemsPerPage').change(function() {
+                itemsPerPage = parseInt($(this).val());
+                currentPage = 1;
+                loadProjects().catch(err => showError(`加载失败: ${err.message}`));
+            });
+            // 一级分类标签点击
+            $('#categoryL1Tags').on('click', '.category-tag-btn', function() {
+                $(this).siblings().removeClass('active');
+                $(this).addClass('active');
+                currentCategoryL1 = $(this).data('value');
+                currentCategoryL2 = '';
+                currentPage = 1;
+                updateCategoryL2Tags(); // 更新二级分类
+                loadProjects().catch(err => showError(`加载失败: ${err.message}`));
+            });
+            // 二级分类标签点击
+            $('#categoryL2Tags').on('click', '.category-tag-btn', function() {
+                $(this).siblings().removeClass('active');
+                $(this).addClass('active');
+                currentCategoryL2 = $(this).data('value');
+                currentPage = 1;
+                loadProjects().catch(err => showError(`加载失败: ${err.message}`));
+            });
+            // 可见性筛选标签点击
+            $('#visibilityTags').on('click', '.category-tag-btn', function() {
+                $(this).siblings().removeClass('active');
+                $(this).addClass('active');
+                currentVisibility = $(this).data('value');
+                currentPage = 1;
+                loadProjects().catch(err => showError(`加载失败: ${err.message}`));
+            });
+            // 搜索功能 - 修改为点击或回车后触发
+            function performSearch() {
+                const query = searchInput.val().trim();
+                if (query !== searchQuery) {
+                    searchQuery = query;
+                    currentPage = 1;
+                    $('#clearSearchBtn').toggle(!!searchQuery);
+                    loadProjects().catch(err => showError(`搜索失败: ${err.message}`));
+                }
+            }
+            // 绑定搜索事件（仅点击按钮或回车触发）
+            $('#searchBtn').click(performSearch);
+            searchInput.on('keypress', e => {
+                if (e.which === 13) {  // 回车键
+                    e.preventDefault();
+                    performSearch();
+                }
+            });
+            
+            // 清除搜索
+            $('#clearSearchBtn').click(function() {
+                searchInput.val('');
+                $(this).hide();
+                searchQuery = '';
+                currentPage = 1;
+                loadProjects().catch(err => showError(`加载失败: ${err.message}`));
+            });
+            // 重置过滤条件
+            $('#resetFilter').click(function() {
+                currentCategoryL1 = '';
+                currentCategoryL2 = '';
+                currentVisibility = '';
+                searchQuery = '';
+                currentPage = 1;
+                searchInput.val('');
+                $('#clearSearchBtn').hide();
+                // 重置标签选中状态
+                $('.category-tag-btn').removeClass('active');
+                $('.category-tag-btn[data-value=""]').addClass('active');
+                updateCategoryL2Tags();
+                loadProjects().catch(err => showError(`加载失败: ${err.message}`));
+            });
+            // 获取分类数据
+            function fetchCategories() {
+                return new Promise((resolve, reject) => {
+                    $.getJSON(categoriesUrl)
+                        .done(data => {
+                            allCategories.l1 = data.l1 || [];
+                            allCategories.l2Map = data.l2Map || {};
+                            populateCategoryL1Tags();
+                            resolve();
+                        })
+                        .fail((jqXHR, textStatus, errorThrown) => {
+                            reject(new Error(errorThrown || '加载分类失败'));
+                        });
+                });
+            }
+            // 填充一级分类标签
+            function populateCategoryL1Tags() {
+                const container = $('#categoryL1Tags');
+                container.html('<button class="category-tag-btn active" data-value="">All</button>');
+                
+                allCategories.l1.forEach(category => {
+                    const safeCategory = escapeHtml(category);
+                    container.append(`<button class="category-tag-btn" data-value="${safeCategory}">${safeCategory}</button>`);
+                });
+            }
+            // 更新二级分类标签
+            function updateCategoryL2Tags() {
+                const container = $('#categoryL2Tags');
+                container.html('<button class="category-tag-btn" data-value="">All</button>');
+                
+                if (!currentCategoryL1) {
+                    return;
+                }
+                
+                const l2Categories = allCategories.l2Map[currentCategoryL1] || [];
+                
+                l2Categories.forEach(category => {
+                    const safeCategory = escapeHtml(category);
+                    container.append(`<button class="category-tag-btn" data-value="${safeCategory}">${safeCategory}</button>`);
+                });
+            }
+            // 加载图片
+            function loadImage(element, url) {
+                element.onload = null;
+                element.onerror = null;
+                element.src = url;
+                
+                element.onerror = function() {
+                    element.src = placeholderImage;
+                };
+            }
+            // 加载项目数据
+            function loadProjects() {
+                return new Promise((resolve, reject) => {
+                    $('#projectList').empty();
+                    $('#loading').removeClass('d-none');
+                    $('#noData').addClass('d-none');
+                    
+                    // 构建请求参数
+                    const params = {
+                        page: currentPage,
+                        limit: itemsPerPage,
+                        sort_by: sortBy,
+                        sort_order: sortOrder
+                    };
+                    
+                    if (currentCategoryL1) params.category_l1 = currentCategoryL1;
+                    if (currentCategoryL2) params.category_l2 = currentCategoryL2;
+                    if (searchQuery) params.search = searchQuery;
+                    if (currentVisibility) params.project_visibility = currentVisibility;
+                    
+                    $.getJSON(projectsUrl, params)
+                        .done(data => {
+                            $('#loading').addClass('d-none');
+                            
+                            if (data.projects && data.projects.length > 0) {
+                                data.projects.forEach(project => {
+                                    $('#projectList').append(createProjectCard(project));
+                                });
+                                renderPagination(data.total, data.page, data.total_pages);
+                            } else {
+                                $('#noData').removeClass('d-none');
+                                $('#pagination').empty();
+                            }
+                            resolve();
+                        })
+                        .fail((jqXHR, textStatus, errorThrown) => {
+                            $('#loading').addClass('d-none');
+                            reject(new Error(errorThrown || '加载项目失败'));
+                        });
+                });
+            }
+            // 创建项目卡片
+            function createProjectCard(project) {
+                const safeProject = {
+                    id: escapeHtml(project.project_id),
+                    title: escapeHtml(project.manual_title),
+                    summary: escapeHtml(project.manual_summary),
+                    author: escapeHtml(project.author_name),
+                    domain: escapeHtml(project.main_domain),
+                    createTime: escapeHtml(project.create_tm),
+                    forkCount: project.project_forked_acc_cnt || 0,
+                    openCount: project.project_opened_acc_cnt || 0,
+                    score: (project.manual_score_updated || 0).toFixed(1),
+                    categoryL1: escapeHtml(project.category_l1),
+                    categoryL2: escapeHtml(project.category_l2),
+                    imageUrl: escapeHtml(project.screenshot_url),
+                    visibility: escapeHtml(project.project_visibility) || 'unknown'
+                };
+                const card = $(`
+                    <div class="project-card">
+                        <div class="project-image-container">
+                            <img class="project-image" alt="${safeProject.title}">
+                            <div class="score-badge">Score: ${safeProject.score}</div>
+                        </div>
+                        <div class="card-content">
+                            <div class="category-tags">
+                                ${safeProject.categoryL1 ? `<span class="category-tag">${safeProject.categoryL1}</span>` : ''}
+                                ${safeProject.categoryL2 ? `<span class="category-tag">${safeProject.categoryL2}</span>` : ''}
+                                <span class="category-tag ${safeProject.visibility === 'private' ? 'bg-warning text-dark' : 'bg-success'}">
+                                    ${safeProject.visibility === 'private' ? 'Private' : 'Public'}
+                                </span>
+                            </div>
+                            <h3 class="project-title">${safeProject.title}</h3>
+                            <p class="project-summary">${safeProject.summary}</p>
+                            <div class="project-meta">
+                                <span class="meta-item"><i class="fas fa-user me-1"></i>${safeProject.author}</span>
+                                <span class="meta-item"><i class="fas fa-calendar me-1"></i>${safeProject.createTime}</span>
+                            </div>
+                            <div class="project-meta">
+                                <span class="meta-item"><i class="fas fa-eye${safeProject.visibility === 'private' ? '-slash' : ''} me-1"></i>
+                                    ${safeProject.visibility === 'private' ? 'Private' : 'Public'}
+                                </span>
+                            </div>
+                            <div class="project-meta">
+                                <span class="meta-item"><i class="fas fa-code-branch me-1"></i>Forks: ${safeProject.forkCount}</span>
+                                <span class="meta-item"><i class="fas fa-eye me-1"></i>Views: ${safeProject.openCount}</span>
+                            </div>
+                            <div class="card-actions">
+                                <button class="btn btn-primary btn-sm view-details" data-id="${safeProject.id}">
+                                    <i class="fas fa-info-circle me-1"></i>Details
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `);
+                // 加载图片
+                const imgElement = card.find('.project-image')[0];
+                if (safeProject.imageUrl) {
+                    loadImage(imgElement, safeProject.imageUrl);
+                } else {
+                    imgElement.src = placeholderImage;
+                }
+                // 详情按钮事件
+                card.find('.view-details').click(function() {
+                    loadProjectDetails($(this).data('id'));
+                });
+                return card;
+            }
+            // 加载项目详情
+            function loadProjectDetails(projectId) {
+                const url = `${apiBaseUrl}/api/projects/${projectId}`;
+                $('#projectModalBody').html(`
+                    <div class="d-flex justify-content-center p-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                `);
+                
+                const modal = new bootstrap.Modal($('#projectModal')[0]);
+                modal.show();
+                $.getJSON(url)
+                    .done(project => {
+                        if (!project) {
+                            $('#projectModalBody').html('<p class="text-danger">Project not found</p>');
+                            return;
+                        }
+                        const safeProject = {
+                            projectId: escapeHtml(project.project_id),
+                            title: escapeHtml(project.manual_title || 'N/A'),
+                            authorId: escapeHtml(project.author_id || 'N/A'),
+                            mainDomain: escapeHtml(project.main_domain || 'N/A'),
+                            createTime: escapeHtml(project.create_tm || 'N/A'),
+                            authorName: escapeHtml(project.author_name || 'N/A'),
+                            authorEmail: escapeHtml(project.author_email || 'N/A'),
+                            manualTitle: escapeHtml(project.manual_title || 'N/A'),
+                            manualSummary: escapeHtml(project.manual_summary || 'No summary available'),
+                            categoryL1: escapeHtml(project.category_l1 || 'N/A'),
+                            categoryL2: escapeHtml(project.category_l2 || 'N/A'),
+                            manualScore: (project.manual_score || 0).toFixed(1),
+                            manualScoreUpdated: (project.manual_score_updated || 0).toFixed(1),
+                            imageUrl: escapeHtml(project.screenshot_url),
+                            visibility: escapeHtml(project.project_visibility) || 'unknown'
+                        };
+                        let detailsHtml = `
+                            <div class="row">
+                                <div class="col-md-4 mb-4">
+                                    <div class="border rounded p-1">
+                                        <img src="${safeProject.imageUrl || placeholderImage}" 
+                                            class="img-fluid rounded" 
+                                            alt="${safeProject.manualTitle}">
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <h4 class="mb-3">${safeProject.manualTitle}</h4>
+                                    
+                                    <div class="category-tags mb-3">
+                                        <span class="category-tag">${safeProject.categoryL1}</span>
+                                        <span class="category-tag">${safeProject.categoryL2}</span>
+                                        <span class="category-tag ${safeProject.visibility === 'private' ? 'bg-warning text-dark' : 'bg-success'}">
+                                            ${safeProject.visibility === 'private' ? 'Private' : 'Public'}
+                                        </span>
+                                    </div>
+                                    
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <tbody>
+                                                <tr>
+                                                    <th style="width: 30%">Project ID</th>
+                                                    <td>${safeProject.projectId}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Title</th>
+                                                    <td>${safeProject.title}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Author</th>
+                                                    <td>${safeProject.authorName}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Created Time</th>
+                                                    <td>${safeProject.createTime}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Visibility</th>
+                                                    <td>
+                                                        <span class="badge ${safeProject.visibility === 'private' ? 'bg-warning text-dark' : 'bg-success'}">
+                                                            ${safeProject.visibility === 'private' ? 'Private' : 'Public'}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Original Score</th>
+                                                    <td>${safeProject.manualScore}</td>
+                                                </tr>
+                                                <tr>
+                                                    <th>Updated Score</th>
+                                                    <td>
+                                                        <span id="currentScore">${safeProject.manualScoreUpdated}</span>
+                                                        <button class="btn btn-sm btn-outline-primary ms-2" id="editScoreBtn">
+                                                            <i class="fas fa-edit"></i> Edit
+                                                        </button>
+                                                        <div id="scoreEditForm" class="mt-2 d-none">
+                                                            <input type="number" step="0.1" min="0" max="1000" 
+                                                                    class="form-control" id="newScoreInput" 
+                                                                    value="${safeProject.manualScoreUpdated}">
+                                                            <div class="mt-2">
+                                                                <button class="btn btn-sm btn-primary" id="saveScoreBtn">
+                                                                    Save
+                                                                </button>
+                                                                <button class="btn btn-sm btn-secondary ms-1" id="cancelScoreBtn">
+                                                                    Cancel
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <!-- 新增聊天链接 -->
+                                                <tr>
+                                                    <th>Chat Link</th>
+                                                    <td>
+                                                        <a href="https://same.new/chat/${safeProject.projectId}" target="_blank" class="text-primary">
+                                                            <i class="fas fa-comment-alt me-1"></i>Chat about this project
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4">
+                                <h5>Manual Summary</h5>
+                                <hr>
+                                <p>${safeProject.manualSummary}</p>
+                            </div>
+                        `;
+                        $('#projectModalBody').html(detailsHtml);
+                        // 分数编辑功能修复
+                        const editScoreBtn = $('#editScoreBtn');
+                        const cancelScoreBtn = $('#cancelScoreBtn');
+                        const saveScoreBtn = $('#saveScoreBtn');
+                        const scoreEditForm = $('#scoreEditForm');
+                        const currentScoreEl = $('#currentScore');
+                        const newScoreInput = $('#newScoreInput');
+                        
+                        const originalScore = parseFloat(safeProject.manualScoreUpdated);
+                        // 编辑按钮点击事件
+                        editScoreBtn.off('click').on('click', function() {
+                            currentScoreEl.addClass('d-none');
+                            editScoreBtn.addClass('d-none');
+                            scoreEditForm.removeClass('d-none');
+                            newScoreInput.val(originalScore).focus();
+                        });
+                        
+                        // 取消按钮点击事件
+                        cancelScoreBtn.off('click').on('click', function() {
+                            scoreEditForm.addClass('d-none');
+                            currentScoreEl.removeClass('d-none');
+                            editScoreBtn.removeClass('d-none');
+                            newScoreInput.val(originalScore);
+                        });
+                        
+                        // 保存按钮点击事件 - 修复版
+                        saveScoreBtn.off('click').on('click', function() {
+                            const newScore = parseFloat(newScoreInput.val());
+                            
+                            // 验证分数有效性
+                            if (isNaN(newScore) || newScore < 0 || newScore > 1000) {
+                                alert('Please enter a valid score between 0 and 1000.');
+                                return;
+                            }
+                            
+                            // 防止重复提交
+                            saveScoreBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Saving...');
+                            
+                            // 发送更新请求
+                            $.ajax({
+                                url: `${apiBaseUrl}/api/projects/${safeProject.projectId}/score`,
+                                type: 'PUT',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ new_score: newScore }),
+                                dataType: 'json',
+                                success: function(response) {
+                                    if (response.status === 'success') {
+                                        // 更新显示的分数
+                                        currentScoreEl.text(newScore.toFixed(1));
+                                        // 隐藏编辑表单，显示分数
+                                        scoreEditForm.addClass('d-none');
+                                        currentScoreEl.removeClass('d-none');
+                                        editScoreBtn.removeClass('d-none');
+                                        // 重新加载项目列表以更新卡片上的分数
+                                        loadProjects();
+                                        // 显示成功提示
+                                        alert('success');
+                                    } else {
+                                        alert('fail: ' + (response.message || '未知错误'));
+                                    }
+                                },
+                                error: function(jqXHR) {
+                                    console.error('fail:', jqXHR);
+                                    alert('fail: ' + (jqXHR.responseJSON?.detail || '服务器错误'));
+                                },
+                                complete: function() {
+                                    // 恢复按钮状态
+                                    saveScoreBtn.prop('disabled', false).html('Save');
+                                }
+                            });
+                        });
+                    })
+                    .fail((jqXHR, textStatus, errorThrown) => {
+                        $('#projectModalBody').html(`<p class="text-danger">加载失败: ${errorThrown}</p>`);
+                    });
+            }
+            // 渲染分页
+            function renderPagination(totalItems, currentPageParam, totalPages) {
+                const pagination = $('#pagination');
+                pagination.empty();
+                
+                if (totalPages <= 1) return;
+                
+                // 上一页
+                pagination.append(`
+                    <li class="page-item ${currentPageParam === 1 ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${Math.max(1, currentPageParam - 1)}">Previous</a>
+                    </li>
+                `);
+                
+                // 页码（最多显示10个）
+                const maxVisible = 10;
+                let startPage = 1, endPage = totalPages;
+                if (totalPages > maxVisible) {
+                    startPage = Math.max(1, currentPageParam - Math.floor(maxVisible / 2));
+                    endPage = startPage + maxVisible - 1;
+                    if (endPage > totalPages) {
+                        endPage = totalPages;
+                        startPage = Math.max(1, endPage - maxVisible + 1);
+                    }
+                }
+                
+                // 首页与省略号
+                if (startPage > 1) {
+                    pagination.append(createPageItem(1));
+                    if (startPage > 2) {
+                        pagination.append($('<li class="page-item disabled"><span class="page-link">...</span></li>'));
+                    }
+                }
+                
+                // 中间页码
+                for (let i = startPage; i <= endPage; i++) {
+                    pagination.append(createPageItem(i));
+                }
+                
+                // 末页与省略号
+                if (endPage < totalPages) {
+                    if (endPage < totalPages - 1) {
+                        pagination.append($('<li class="page-item disabled"><span class="page-link">...</span></li>'));
+                    }
+                    pagination.append(createPageItem(totalPages));
+                }
+                
+                // 下一页
+                pagination.append(`
+                    <li class="page-item ${currentPageParam === totalPages ? 'disabled' : ''}">
+                        <a class="page-link" href="#" data-page="${Math.min(totalPages, currentPageParam + 1)}">Next</a>
+                    </li>
+                `);
+                
+                // 分页点击事件
+                pagination.on('click', '.page-link[data-page]', function(e) {
+                    e.preventDefault();
+                    const page = parseInt($(this).data('page'));
+                    if (page !== currentPage) {
+                        currentPage = page;
+                        loadProjects().catch(err => showError(`加载失败: ${err.message}`));
+                        $('html, body').animate({
+                            scrollTop: $('#projectList').offset().top - 200
+                        }, 300);
+                    }
+                });
+            }
+            // 创建分页项
+            function createPageItem(pageNumber) {
+                return $(`
+                    <li class="page-item ${currentPage === pageNumber ? 'active' : ''}">
+                        <a class="page-link" href="#" data-page="${pageNumber}">${pageNumber}</a>
+                    </li>
+                `);
+            }
+
+            // 分析数据加载函数
+            function loadAnalysisData() {
+                const analysisUrl = `${apiBaseUrl}/api/analysis`;
+                $('#analysisLoading').removeClass('d-none');
+                $('#analysisBoard').addClass('d-none');
+                $('#analysisError').addClass('d-none');
+
+                $.getJSON(analysisUrl)
+                    .done(data => {
+                        $('#analysisLoading').addClass('d-none');
+                        renderAnalysisBoard(data.l1_analysis, data.l2_map);
+                        $('#analysisBoard').removeClass('d-none');
+                    })
+                    .fail((jqXHR, textStatus, errorThrown) => {
+                        $('#analysisLoading').addClass('d-none');
+                        $('#analysisError').text(`加载分析数据失败: ${errorThrown}`).removeClass('d-none');
+                    });
+            }
+
+            // 渲染分析看板
+            function renderAnalysisBoard(l1Data, l2Map) {
+                let html = `
+                <div class="table-responsive mb-4">
+                    <h4>Level 1 Categories</h4>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Project Count</th>
+                                <th>Author Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+
+                // 一级分类数据
+                l1Data.forEach(item => {
+                    html += `
+                    <tr>
+                        <td>${escapeHtml(item.category_l1)}</td>
+                        <td>${item.project_count}</td>
+                        <td>${item.author_count}</td>
+                    </tr>`;
+                });
+
+                html += `</tbody></table></div>`;
+
+                // 二级分类数据
+                html += `<div class="mt-4">
+                    <h4>Level 2 Categories</h4>`;
+
+                l1Data.forEach(l1Item => {
+                    const l2Items = l2Map[l1Item.category_l1] || [];
+                    if (l2Items.length === 0) return;
+
+                    html += `
+                    <div class="mb-3">
+                        <h5>${escapeHtml(l1Item.category_l1)}</h5>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Subcategory</th>
+                                        <th>Project Count</th>
+                                        <th>Author Count</th>
+                                    </tr>
+                                </thead>
+                                <tbody>`;
+
+                    l2Items.forEach(l2Item => {
+                        html += `
+                        <tr>
+                            <td>${escapeHtml(l2Item.category_l2)}</td>
+                            <td>${l2Item.project_count}</td>
+                            <td>${l2Item.author_count}</td>
+                        </tr>`;
+                    });
+
+                    html += `</tbody></table></div></div>`;
+                });
+
+                html += `</div>`;
+                $('#analysisBoard').html(html);
+            }
+
+            // 绑定Tab切换事件
+            $('#projectTabs').on('shown.bs.tab', function (e) {
+                const tabId = $(e.target).attr('id');
+                if (tabId === 'analysis-tab') {
+                    loadAnalysisData(); // 切换到分析标签时加载数据
+                }
+            });
+        });
+    </script>
+</body>
+</html>

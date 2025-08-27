@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Project Operations Platform</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background-color: #f9fafb;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            max-width: 400px;
+            width: 100%;
+            background-color: #fff;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        .login-title {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #2d3748;
+            font-size: 1.8rem;
+            font-weight: 600;
+        }
+        .form-group {
+            margin-bottom: 1.2rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #475569;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #93c5fd;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border-radius: 8px;
+            background-color: #3b82f6;
+            border: none;
+            color: white;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+        .btn-primary:hover {
+            background-color: #2563eb;
+        }
+        .error-message {
+            color: #dc2626;
+            background-color: #fee2e2;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .text-center {
+            text-align: center;
+            margin-top: 1rem;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2 class="login-title"><i class="fas fa-database me-2 text-primary"></i>Project Operations Platform</h2>
+        <h3 style="text-align: center; margin-bottom: 1.5rem;">Please Login</h3>
+        
+        <div id="loginError" class="error-message d-none"></div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Enter username" required>
+            </div>
+            <div class="form-group">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Enter password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-sign-in-alt me-1"></i> Login
+            </button>
+        </form>
+        
+        <div class="text-center">
+            <p>Use username: xx, password: xxxxx</p>
+        </div>
+    </div>
+
+    <script>
+        // 检查URL中是否有错误参数
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        
+        if (error) {
+            showLoginError(decodeURIComponent(error));
+        }
+        
+        // 登录表单提交
+        $('#loginForm').submit(function(e) {
+            e.preventDefault();
+            const username = $('#username').val().trim();
+            const password = $('#password').val().trim();
+            
+            if (!username || !password) {
+                showLoginError('Please enter both username and password');
+                return;
+            }
+            
+            // 发送登录请求
+            $.post('/login', { username, password })
+                .done(function() {
+                    // 登录成功，重定向到主页面
+                    window.location.href = '/static/index.html';
+                })
+                .fail(function(xhr) {
+                    const errorMsg = xhr.responseJSON?.detail || 'Login failed. Please check your credentials.';
+                    showLoginError(errorMsg);
+                });
+        });
+        
+        // 显示登录错误
+        function showLoginError(message) {
+            const loginError = $('#loginError');
+            loginError.text(message).removeClass('d-none');
+            
+            // 3秒后自动隐藏错误消息
+            setTimeout(() => {
+                loginError.addClass('d-none');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
