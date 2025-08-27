@@ -5,3 +5,5 @@ __pycache__/
 # 虚拟环境（如 venv、.env）
 venv/
 .env
+.DS_Store
+**/.DS_Store
